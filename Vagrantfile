@@ -55,6 +55,7 @@ Vagrant.configure("2") do |config|
       podman \
       podman-compose \
       unzip \
+      tmux \
       vim
 
     loginctl enable-linger vagrant
@@ -64,6 +65,11 @@ Vagrant.configure("2") do |config|
     BASHRC_PATH="/home/vagrant/.bashrc"
     grep -qxF "$DIRENV_SHELLHOOK" "$BASHRC_PATH" || echo "$DIRENV_SHELLHOOK" >> "$BASHRC_PATH"
     grep -qxF "export DOCKER_HOST=\"$PODMAN_SOCKET_LOCATION\"" "$BASHRC_PATH" || echo "export DOCKER_HOST=\"$PODMAN_SOCKET_LOCATION\"" >> "$BASHRC_PATH"
+    TMUX_SHELLHOOK='# Auto-attach tmux on SSH login; exiting tmux ends the SSH session
+if [[ $- == *i* ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]] && command -v tmux >/dev/null 2>&1; then
+  exec tmux new-session -A -s main
+fi'
+    grep -qF 'exec tmux new-session' "$BASHRC_PATH" || printf '%s\n' "$TMUX_SHELLHOOK" >> "$BASHRC_PATH"
 
     su - vagrant -c '
       curl -fsSL https://bun.com/install | bash -s "bun-#{bun_version}"
