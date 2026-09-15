@@ -59,6 +59,10 @@ Vagrant.configure("2") do |config|
       vim
 
     loginctl enable-linger vagrant
+    # dbus-user-session's sockets.target.wants symlink only applies at user manager
+    # startup; the package is installed after user@1000 is already running, so start
+    # the session bus explicitly or podman falls back to cgroupfs
+    su - vagrant -c 'XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user daemon-reload && XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user start dbus.socket'
     su - vagrant -c 'XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user enable --now podman.socket'
     DIRENV_SHELLHOOK='eval "$(direnv hook bash)"'
     PODMAN_SOCKET_LOCATION="unix://$(sudo -u vagrant -- podman info --format '{{.Host.RemoteSocket.Path}}')"
