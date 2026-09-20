@@ -2,8 +2,8 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "omp"
   config.vm.box = "debian/trixie64"
   config.vm.box_version = "13.20260519.1"
-  bun_version = "v1.4.0"
-  omp_version = "v18.0.11"
+  bun_version = "v1.4.2"
+  omp_version = "v18.2.6"
   skills_version = "v1.2.3"
 
   mem = (ENV['VAGRANT_MEM'] || 8192).to_i
