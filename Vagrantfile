@@ -74,6 +74,14 @@ if [[ $- == *i* ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]] && command -v tmux
   exec tmux new-session -A -s main
 fi'
     grep -qF 'exec tmux new-session' "$BASHRC_PATH" || printf '%s\n' "$TMUX_SHELLHOOK" >> "$BASHRC_PATH"
+    # tmux panes run login shells: /etc/profile resets PATH, then nix-daemon.sh's
+    # per-shell guard (inherited from the server's environment) stops it re-adding
+    # the nix dirs. Unset the guard so every pane's login shell gets nix on PATH.
+    TMUX_NIX_GUARD='set-environment -g -u __ETC_PROFILE_NIX_SOURCED'
+    TMUX_CONF_PATH="/home/vagrant/.tmux.conf"
+    touch "$TMUX_CONF_PATH"
+    grep -qxF "$TMUX_NIX_GUARD" "$TMUX_CONF_PATH" || echo "$TMUX_NIX_GUARD" >> "$TMUX_CONF_PATH"
+    chown vagrant:vagrant "$TMUX_CONF_PATH"
 
     su - vagrant -c '
       curl -fsSL https://bun.com/install | bash -s "bun-#{bun_version}"
